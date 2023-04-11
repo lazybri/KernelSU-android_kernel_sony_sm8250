@@ -1,3 +1,4 @@
+#! /bin/bash
 #!/bin/bash
 
 #====================
@@ -112,7 +113,7 @@ building(){
         export ARCH=arm64
         export SUBARCH=arm64
 
-        make O=out pdx203_defconfig
+        make O=out pdx206_defconfig
         PATH="/home/zsyizh/cbl17/bin:$PATH" \
         make -j$(nproc) O=out \
         ARCH=arm64 \
