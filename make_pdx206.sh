@@ -13,7 +13,7 @@ build_device="pdx206"
 kernel_name="Coleoptera-kernel-beta5-oss-KSUver"
 defconfig_path="pdx206_defconfig"
 kbuild_build_user="pdx206-oss"
-kbuild_build_host="Dedrimer"
+kbuild_build_host="Dedrimer/lazybri"
 support="11, 12, 13"
 #====================
 
@@ -65,16 +65,17 @@ timedatectl set-timezone ${timezone}
 
 print "You are building version:${date}" yellow
 
-clang_path="${HOME}/cbl17/bin"
-gcc_path="/usr/bin/aarch64-linux-gnu-"
+clang_path="./toolchain/cbl17/bin"
+gcc_path="./toolchain/aarch64-linux-android-4.9/aarch64-linux-gnu-"
 gcc_32_path="/usr/bin/arm-linux-gnueabi-"
 
 args="-j$(nproc --all)  \
             O=out  \
-            ARCH=arm64 "
+            ARCH=arm64 \
+            SUBARCH=arm64"
 
 if [ ${buildtype} == gcc ];then
-    export PATH=$PATH:/usr/bin/aarch64-linux-gnu-
+    export PATH=$PATH:./toolchain/aarch64-linux-android-4.9/bin/aarch64-linux-gnu-
     args+="-Wno-unused-function \
     SUBARCH=arm64 \
     CROSS_COMPILE=aarch64-linux-gnu- \
@@ -113,12 +114,12 @@ building(){
         export SUBARCH=arm64
 
         make O=out pdx206_defconfig
-        PATH="/home/zsyizh/cbl17/bin:$PATH" \
+        PATH="${clang_path}:$PATH" \
         make -j$(nproc) O=out \
         ARCH=arm64 \
         CC=clang \
-        CLANG_TRIPLE=aarch64-linux-gun- \
-        CROSS_COMPILE=/home/zsyizh/SM-8250/toolchain_aarch64_travis/google_gcc/aarch64-linux-android-4.9/bin/aarch64-linux-android- \
+        CLANG_TRIPLE=aarch64-linux-gnu- \
+        CROSS_COMPILE=${gcc_path}/bin/aarch64-linux-android- \
         | tee kernel.log
         if [ $? = 0 ];then
             echo -e "\033[32m [INFO] Build successfully \033[0m"
