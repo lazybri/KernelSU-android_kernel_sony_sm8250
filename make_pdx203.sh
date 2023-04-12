@@ -65,21 +65,23 @@ timedatectl set-timezone ${timezone}
 
 print "You are building version:${date}" yellow
 
-clang_path="./toolchain/cbl17/bin"
-gcc_path="./toolchain/aarch64-linux-android-4.9/aarch64-linux-gnu-"
-gcc_32_path="/usr/bin/arm-linux-gnueabi-"
+CURRENT_DIR=$(pwd)
+
+clang_path="${CURRENT_DIR}/toolchain/cbl17/bin"
+gcc_path="${CURRENT_DIR}/toolchain/aarch64-linux-gnu/bin/aarch64-linux-gnu-"
+gcc_32_path="${CURRENT_DIR}/toolchain/arm-linux-gnueabi/bin/arm-linux-gnueabi-"
 
 args="-j$(nproc --all)  \
             O=out  \
             ARCH=arm64 \
-            SUBARCH=arm64"
+            "
 
 if [ ${buildtype} == gcc ];then
-    export PATH=$PATH:./toolchain/aarch64-linux-android-4.9/bin/aarch64-linux-gnu-
+    export PATH=$PATH:${CURRENT_DIR}/toolchain/aarch64-linux-gnu/bin
     args+="-Wno-unused-function \
     SUBARCH=arm64 \
-    CROSS_COMPILE=aarch64-linux-gnu- \
-    CROSS_COMPILE_ARM32=arm-linux-gnueabi- "
+    CROSS_COMPILE=${gcc_path} \
+    CROSS_COMPILE_ARM32=${gcc_32_path} "
 else [ ${buildtype} == clang ]
     args+="CC=${clang_path}/clang \
 	    CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -115,11 +117,11 @@ building(){
 
         make O=out pdx203_defconfig
         PATH="${clang_path}:$PATH" \
-        make -j$(nproc) O=out \
+        make -j$(nproc --all) O=out \
         ARCH=arm64 \
-        CC=clang \
-        CLANG_TRIPLE=aarch64-linux-gnu- \
-        CROSS_COMPILE=${gcc_path}/bin/aarch64-linux-android- \
+        CC=${clang_path}/clang \
+        CLANG_TRIPLE=${gcc_path} \
+        CROSS_COMPILE=${gcc_path} \
         | tee kernel.log
         if [ $? = 0 ];then
             echo -e "\033[32m [INFO] Build successfully \033[0m"
